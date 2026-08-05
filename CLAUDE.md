@@ -41,6 +41,7 @@ The owner (H1 username `myliberty`) receives all mail sent to any `+identifier` 
 |---|---|
 | `/recon` | `/recon target.com` — full recon pipeline |
 | `/hunt` | `/hunt target.com` — start hunting |
+| `/hunt-caido` | `/hunt-caido "2026-08-05 16:50" [--scope <name>]` — hunt the Caido HTTP history after a datetime, scoped; proves each injection class per Critical Rule 7 |
 | `/validate` | `/validate` — run 7-Question Gate on current finding |
 | `/report` | `/report` — write submission-ready report |
 | `/chain` | `/chain` — build A→B→C exploit chain |
@@ -153,3 +154,9 @@ chmod +x install.sh && ./install.sh
 4. KILL weak findings fast — N/A hurts your validity ratio
 5. 5-minute rule — nothing after 5 min = move on
 6. **LEAD BOARD — never lose a lead.** After recon, run `lead_board.py ingest <target>` + `show`, and route each finding to its `hunt-*` skill in plain language ("GraphQL endpoint → hunt-graphql"). When starting/killing/reporting a lead, `touch` its status. The hunter focuses on one lead at a time; the board remembers the rest so none is forgotten. Surface stale high-priority leads unprompted.
+7. **INJEÇÃO — PROVAR, NUNCA ASSUMIR.** Never declare SQLi / SSTI / RCE / XXE / reflected-XSS "absent" or "not applicable" on any request that has parameters, based on visual inspection ("looks like normal traffic" / "the param looks validated"). Instead:
+   - **Enumerate every parameter** (query, path segment, body field, custom header) and its **expected type** (UUID / enum / int / free-text / date).
+   - **Attack each by type**, with a FRESH token (Tradeshift tokens expire in ~minutes — pull from `/v4/accesstoken`, field `.accessToken` already includes "Bearer "), replaying **server-side via `caido_send_request`** (a cross-origin browser `fetch` to api-sandbox returns a spurious 405):
+     - **free-text** → SQLi error (`'` `"`) + boolean (`' OR '1'='1`) + **time-based** (`'||pg_sleep(5)--`, `' AND SLEEP(5)--`) measuring `roundtripMs`; SSTI (`${7*7}` `{{7*7}}` `#{7*7}` `<%=7*7%>`) checking if it evaluates to `49`; **reflected XSS** (`"><svg onerror=…>` / `'"><script>` — is the payload reflected raw in an HTML-context response?).
+     - **UUID / enum / int** → confirm the type binding rejects malformed input **before** the query (`400 "For input string"` / `"No enum constant"` / UUID-parse fail = unreachable).
+   - **Only declare negative with the evidence in hand** — status + body snippet + timing. "Looks validated" is not evidence. `${7*7}` echoed literally = no SSTI; response ≈ baseline latency = no time-based SQLi. See memory `feedback-param-injection-method`. This is the core of `/hunt-caido`.
