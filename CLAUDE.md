@@ -2,6 +2,16 @@
 
 This repo is a Claude Code plugin for professional bug bounty hunting across HackerOne, Bugcrowd, Intigriti, and Immunefi.
 
+## Test Resources
+
+**Controlled receiving email (for invites / signup / reset / ATO chains):** use the HackerOne subaddressing pattern
+
+```
+myliberty+<unique-identifier>@wearehackerone.com
+```
+
+The owner (H1 username `myliberty`) receives all mail sent to any `+identifier` variant. Use a unique identifier per test to correlate. Prefer this over non-receiving domains (e.g. `myliberty.com.br`, which serves web/OOB HTTP callbacks but does not reliably receive email) whenever the test needs an email that actually lands in an inbox.
+
 ## What's Here
 
 ### Skills (10 domains — load with `/bug-bounty`, `/web2-recon`, `/token-scan`, etc.)
