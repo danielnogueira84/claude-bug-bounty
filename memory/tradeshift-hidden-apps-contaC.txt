@@ -1,0 +1,138 @@
+
+###==================================== Alvo Idor ====================================###
+
+AppManager (sem vulnerabilidade - observação para o campo Activated For com o valor INACCESSIBLE INACCESSIBLE)
+AutomationDashboard (Duplicated)
+BranchManagement (sem vulnerabilidade)
+Bucko (sem vulnerabilidade)
+BusinessAuditTrail (sem vulnerabilidade)
+CollaborationPanelV2 (sem vulnerabilidade)
+CompanySubscription (sem vulnerabilidade - não consegui gerar dados na tela para gerar provas da vulnerabilidade)
+CreditNotes (sem vulnerabilidade)
+Forms (sem vulnerabilidade)
+GoodsReceipt (sem vulnerabilidade)
+MessagesConfigurator (sem vulnerabilidade)
+PurchaseOrders (sem vulnerabilidade)
+Quote (sem vulnerabilidade)
+Quotes (sem vulnerabilidade)
+RelationshipManager (sem vulnerabilidade)
+Reporting (sem vulnerabilidade)
+ScanIO (sem vulnerabilidade)
+
+
+###==================================== IDOR Reportado ====================================###
+
+
+BMMPermissions
+FTPS
+QuestionnaireBuilder
+SelfServiceOnboarding
+SFTP
+
+
+###==================================== Testados sem sucesso ====================================###
+
+APApproval
+APCoding
+APForwarding
+AppRouter
+Apps
+AppStore
+AppStoreLG
+APVerification
+AskAda
+BillingAddressSelector
+BranchSelector
+BrickLib
+BulkUpload
+BuyApprovalTasks
+BuyAssistanceTasks
+ChromeService
+CollaborationLinks
+CollaborationService25
+CompanyProfile
+CompanyProfileLG
+CompanySearch
+CompanySubscription
+ConnectionGroupsLG
+ConversationLG
+CountrySelector
+CreateDocuments
+CreditNote
+CreditNoteLG
+Dashboard
+DecisionMatchingTasks
+Document
+DocumentManager
+DocumentMatching
+DocumentTemplateSelector
+DocumentValidator
+DownloadAttachment
+EngagementFlow
+EPApprovalRestrictedTask
+EPApprovalTask
+EPCommodityHelpTask
+EPNotificationTask
+Flip
+GlobalEnableDisableConfig
+Header
+IBXSearchStub
+IdentityService
+InsightCardViewer
+IntraCompanyTasks
+Invoice
+InvoiceLG
+Knowledgebase
+Legacy
+Lib
+ListConfigurator
+ListValidation
+MaintenancePopup
+MatchingApproval
+Messages
+Migration
+Network
+NetworkManager
+Order
+OrderChange
+OrderLG
+OrderResponse
+PanelInjector
+PartyLocations
+Pay
+PaymentMeans
+People
+PrepaymentInvoiceLG
+PreventDuplicates
+ProFormaInvoiceLG
+PurchaseRequestV2
+QuestionnaireView
+QuoteLG
+ReceiptAdviceMatching
+Redirector
+RelationshipProfile
+RemittanceAdvice
+RoutingService
+SettingsLG
+ShippingNotice
+SupplierMarketplaceManagerV2
+Support
+SupportCenter
+SupportRedirector
+TaskManager
+TaxSelector
+TaxSelectorLG
+Teams
+Terms
+TradeshiftService
+UI
+UIComponents
+UnitSelector
+UniversalInbox
+University
+UserSelector
+Workflow
+WorkflowCore
+WorkflowService
+WorkflowUI
+WorkflowValidation
