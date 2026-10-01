@@ -35,11 +35,22 @@ The HTTPQL date filter does **not** work (`req.created.gt` is rejected). Convert
    ```bash
    TZ=America/Sao_Paulo date -j -f "%Y-%m-%d %H:%M:%S" "2026-08-05 16:50:00" +%s
    ```
-2. Request-ids are globally sequential in time. Probe `caido_get_request` (metadata only — it returns `createdAt`) on candidate ids, bisecting between a known-early and known-late id until you bracket the cutoff. `request not found` on high ids ⇒ you passed the max id; walk back down.
-3. Result: the first in-window request-id. Build a pagination cursor for it:
+
+2. **⚠️ CRITICAL — bisect with FORGED CURSORS, never with loose `caido_get_request`.** Request-ids advance with time **but are sparse — they have large gaps** (a 5k-id jump between adjacent captures is normal). Therefore `caido_get_request` on a *guessed* id usually returns `request not found` **because that id is a gap, NOT because you passed the max**. Treating "not found" as "past the end" is the #1 recurring failure of this command — it makes you declare the window empty when it is full. (Real miss, 27/08/2026: probed ids 385000/390000 → all "not found", wrongly concluded max id ≈ 384610 / no traffic; the real max was **640692** — the guessed ids just landed in gaps.)
+
+   Instead, probe **existence of a range** with `caido_list_requests`, which skips gaps:
    ```bash
-   printf '{"id":"<ID>","order_value":null}' | base64   # → pass as `after`
+   printf '{"id":"<ID>","order_value":null}' | base64   # forge a cursor at <ID>
    ```
+   ```
+   caido_list_requests(httpql:'req.host.cont:"<scope-token>"', after:<forged-cursor>, limit:3)
+   ```
+   - **Empty results + `hasMore:false`** ⇒ nothing exists at/after `<ID>` → the max is **below** `<ID>`. Bisect down.
+   - **Non-empty** ⇒ traffic exists above `<ID>` → bisect up. Read the returned ids' `createdAt` (via `caido_get_request` on the **ids the list actually returned** — those are real, not guesses) to know which side of the cutoff you're on.
+   - Binary-search the boundary this way until you bracket first-id-with-`createdAt ≥ cutoff`. `caido_get_request` is only ever called on ids a `list_requests` actually returned, to read their `createdAt`.
+   - Tip: `/v4/accesstoken` and other cache-busted URLs carry `_=<unixMillis>` in the query — a free, exact timestamp for the boundary hunt (compare `_/1000` to the cutoff unix).
+
+3. Result: the first in-window request-id. Reuse its forged cursor (`printf '{"id":"<ID>","order_value":null}' | base64`) as `after` for Step 3.
 
 ## Step 3 — List in-scope, in-window requests and strip noise
 
