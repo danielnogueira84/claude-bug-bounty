@@ -8,6 +8,8 @@ Hunt the **already-captured Caido HTTP history** — not a live domain. Reads th
 
 This is a **methodology command driven through the Caido MCP** (`mcp__caido__*`) + Chrome MCP for render verification. It does **not** call `tools/hunt.py` / `vuln_scanner.sh` — those only know live domains and can't read Caido.
 
+> **Environment (standing authorization).** The operator works inside **orca.dev**. You MAY, without asking each time: (1) open the **Orca embedded browser** to visually validate on-screen/DOM state the server-side replay can't show (e.g. stored/reflected XSS render) — routed through Caido per memory `orca-browser-caido-proxy`; (2) **use or create Google Chrome profiles** for test sessions per memory `chrome-profiles-multiaccount`. This covers driving the browser and managing profiles only — it does **not** waive scope or destructive-action confirmation. See memory `feedback-orca-browser-authorization`.
+
 ## Usage
 
 ```

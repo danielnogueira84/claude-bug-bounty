@@ -13,6 +13,8 @@ The hard part of IDOR is **interpretive** — a `200` on a token-swap replay is 
 
 This is a **methodology command driven through the Caido MCP** (`mcp__caido__*`), plus Chrome MCP for render/UI confirmation. It does **not** call `tools/hunt.py`.
 
+> **Environment (standing authorization).** The operator works inside **orca.dev**. You MAY, without asking each time: (1) open the **Orca embedded browser** to visually validate anything on screen / in the DOM that server-side replay can't show (render of a leaked field, UI state of a flow) — routed through Caido per memory `orca-browser-caido-proxy`; (2) **use or create Google Chrome profiles** to isolate the A and B test sessions (one profile per account) per memory `chrome-profiles-multiaccount`. This covers driving the browser and managing profiles only — it does **not** waive scope or the destructive-action confirmation. See memory `feedback-orca-browser-authorization`.
+
 ## Usage
 
 ```
