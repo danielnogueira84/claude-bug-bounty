@@ -59,6 +59,8 @@ def get_order(order_id):
 [ ] Log in as A, perform all actions, note all IDs
 [ ] Replay A's requests with A's token but B's IDs
 [ ] Test EVERY HTTP method (GET, PUT, DELETE, PATCH)
+[ ] DELETE/consuming ops: RE-PROVISION a fresh object as B first (see V9) —
+    a replayed DELETE hits an already-gone object = false negative
 [ ] Check API v1 vs v2
 [ ] Check GraphQL node() queries
 [ ] Check WebSocket messages for client-supplied IDs
@@ -70,6 +72,31 @@ def get_order(order_id):
 - IDOR + Admin endpoint = Critical (privilege escalation)
 - IDOR + Account takeover path = Critical
 - IDOR + Chatbot reads other user's data = High
+
+### V9 — DELETE / consuming operations: RE-PROVISION before replay
+A captured `DELETE` (or any **one-shot / state-consuming** op — redeem token,
+accept invite, mark-as-used, cancel, one-way status transition) has **already
+consumed the object**. Replaying it cross-tenant (`A→B`) then hits a **gone**
+object, and the result is a **false negative**:
+- `404 / "not found"` looks like access control — but the authz check often
+  **never runs**: the object lookup fails *before* it, so you proved nothing.
+- Idempotent `DELETE` returns `200/204` whether or not it deleted anything.
+
+**Fix — recreate a live, known object owned by B, then attack:**
+```
+1. As B: create a FRESH object        → new id obj_B_new
+2. As B: GET obj_B_new                 → 200 (confirm it exists = oracle set)
+3. As A: DELETE obj_B_new              (the cross-tenant attack)
+4. As B: GET obj_B_new again           → THE ORACLE, not the delete's status:
+      gone (404)      → BOLA DELETE CONFIRMED (A destroyed B's object)
+      still there +403 on step 3 → authz held, kill
+      still there +200 on step 3 → silent no-op/scoped delete, not a bug (note it)
+```
+The delete's own status code is unreliable (404-masking + idempotency) — **the
+read-back as B is the only proof**. Same pattern for consuming ops: re-provision
+fresh state (new invite/token/object) before each cross-tenant replay, and verify
+the *effect* on B's side, never the attacker-side status alone. To recreate, reuse
+the CREATE request from history or drive the UI once to capture it.
 
 ---
 
