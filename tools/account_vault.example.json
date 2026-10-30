@@ -1,0 +1,63 @@
+{
+  "_comment": "SCHEMA EXAMPLE ONLY — redacted, safe to commit. REAL vaults live OUTSIDE git at ~/.claude/projects/<slug>/memory/accounts/<target>.json (chmod 0600), managed by tools/account_vault.py. Never commit real credentials.",
+  "target": "example",
+  "scope": "Example Program",
+  "updated": "2026-10-30T19:00:00Z",
+  "accounts": [
+    {
+      "label": "A-admin",
+      "role": "Owner / full-access admin",
+      "access": "full",
+      "company": {"name": "Company A", "id": "<companyId-A>", "tenantId": "<tenantId-A>"},
+      "groups": ["Owners", "Admins"],
+      "username": "owner-a@example-test.com",
+      "password": "<redacted>",
+      "identity": {"actorId": "<actorId-A>", "userId": "<userId-A>"},
+      "canary": "ZZCAN-A-7f3a9e",
+      "chrome_profile": "bb-A-admin",
+      "session": {
+        "bearer": "<Bearer ... — set via set-session, has TTL>",
+        "cookies": {"JSESSIONID": "<redacted>", "csrfToken": "<redacted>"},
+        "headers": {},
+        "obtained_at": "2026-10-30T19:00:00Z",
+        "ttl_seconds": 300
+      },
+      "refresh": {
+        "method": "endpoint",
+        "how": "GET /v4/accesstoken with the stored cookie -> .accessToken (already includes 'Bearer ')",
+        "login_url": "https://app.example.com/login"
+      },
+      "notes": "Baseline that legitimately sees everything in Company A."
+    },
+    {
+      "label": "B-admin",
+      "role": "admin (different company)",
+      "access": "full",
+      "company": {"name": "Company B", "id": "<companyId-B>", "tenantId": "<tenantId-B>"},
+      "groups": ["Admins"],
+      "username": "owner-b@example-test.com",
+      "password": "<redacted>",
+      "identity": {"actorId": "<actorId-B>", "userId": "<userId-B>"},
+      "canary": "ZZCAN-B-9c21d4",
+      "chrome_profile": "bb-B-admin",
+      "session": {"bearer": "", "cookies": {}, "headers": {}, "obtained_at": "", "ttl_seconds": 300},
+      "refresh": {"method": "endpoint", "how": "same as A-admin, B's session", "login_url": "https://app.example.com/login"},
+      "notes": "Cross-tenant pair with A-admin. A->B must NOT read/modify B's objects."
+    },
+    {
+      "label": "A-lowpriv",
+      "role": "restricted user",
+      "access": "restricted",
+      "company": {"name": "Company A", "id": "<companyId-A>", "tenantId": "<tenantId-A>"},
+      "groups": ["Viewers"],
+      "username": "viewer-a@example-test.com",
+      "password": "<redacted>",
+      "identity": {"actorId": "<actorId-A-low>", "userId": "<userId-A-low>"},
+      "canary": "ZZCAN-Alow-4e88b1",
+      "chrome_profile": "bb-A-lowpriv",
+      "session": {"bearer": "", "cookies": {}, "headers": {}, "obtained_at": "", "ttl_seconds": 300},
+      "refresh": {"method": "login", "how": "POST username/password to login_url, capture Set-Cookie", "login_url": "https://app.example.com/login"},
+      "notes": "Same tenant as A-admin, minimal rights -> vertical privesc / BFLA (can lowpriv hit admin-only endpoints in its own company?)."
+    }
+  ]
+}

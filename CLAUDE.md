@@ -12,6 +12,8 @@ myliberty+<unique-identifier>@wearehackerone.com
 
 The owner (H1 username `myliberty`) receives all mail sent to any `+identifier` variant. Use a unique identifier per test to correlate. Prefer this over non-receiving domains (e.g. `myliberty.com.br`, which serves web/OOB HTTP callbacks but does not reliably receive email) whenever the test needs an email that actually lands in an inbox.
 
+**Test identities (for IDOR/BOLA & auth):** kept per target in the **account vault** — `tools/account_vault.py` (standard model ≥3: `A-admin` full/Company A, `B-admin` other company, `A-lowpriv` restricted/same tenant; extend with `A-<role>`). Each entry holds login/role/groups/company/identity-ids/canary + a live session (bearer/cookies, TTL) + refresh recipe, so any account can be re-logged-in / refreshed on demand. **Creds live OUTSIDE git** in Claude's project memory dir (`memory/accounts/<target>.json`, `0600`), one Chrome profile per account. See `/hunt-idor-caido` and memory `feedback-account-vault`.
+
 ## What's Here
 
 ### Skills (10 domains — load with `/bug-bounty`, `/web2-recon`, `/token-scan`, etc.)
@@ -111,6 +113,7 @@ The owner (H1 username `myliberty`) receives all mail sent to any `+identifier` 
 - `tools/breach_checker.py` — HIBP k-anonymity wordlist enrichment; ranks passwords by breach count (no API key, free)
 - `tools/spray_orchestrator.sh` — password spray with typed-hostname guard + lockout warning + audit log; modes: http-form / oauth / o365 / okta (TREVOR); requires `--with-credential-attack` for TREVOR modes
 - `tools/graphql_audit.sh` — 7-phase GraphQL audit: introspection + schema dump, graphw00f fingerprint, clairvoyance field discovery, batching DoS, alias bomb, gqlmap injection, graphql-cop checklist
+- `tools/account_vault.py` — per-target **test-identity vault** for IDOR/BOLA & auth hunting. Stores each account's login/role/groups/company/identity-ids/canary + the live session (bearer/cookies with TTL) + a refresh recipe, so any identity can be re-logged-in / token-refreshed / cookie-minted on demand. Standard model ≥3: `A-admin` (full, Company A), `B-admin` (other company → cross-tenant), `A-lowpriv` (same tenant → vertical privesc). Commands: `template/list/get/set-session/stale/set-field/upsert`. **Creds live OUTSIDE git** in Claude's project memory dir (`~/.claude/projects/<slug>/memory/accounts/<target>.json`, `0600`); only `account_vault.example.json` (redacted schema) is in the repo. See `/hunt-idor-caido`.
 - `tools/lead_board.py` — persistent per-target lead ledger that routes every recon observation to the right `hunt-*` skill and tracks its status so no lead is forgotten (`memory/leads/<target>.jsonl`). `ingest` parses recon output and routes 30+ signal types (IDOR/SSRF/GraphQL/OAuth/SAML/LLM/source-leak/tech-stack/nuclei) to skills; `show` lists untouched-first and flags stale high-priority leads; `next` returns the single top lead; `touch` marks a lead investigating/killed/reported (re-ingest preserves status). See **Critical Rule 6**.
 
 ### External tool references

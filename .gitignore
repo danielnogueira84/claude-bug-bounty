@@ -36,3 +36,9 @@ venv/
 nmap-output/
 .atlas/
 .forge/
+
+# Account vault — real test-identity creds NEVER belong in git.
+# (Real vaults live outside the repo in Claude's project memory dir; this is a safety net.)
+memory/accounts/
+accounts/*.json
+!tools/account_vault.example.json

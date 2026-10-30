@@ -35,8 +35,10 @@ Before starting an auth-aware run:
 - Confirm with the user: "Auth session detected (id=<hash>, headers=[...]).
   Continue under this identity?"
 - If the program forbids automated authenticated testing, **stop**.
-- For IDOR / privilege-escalation hunts, ask whether a second low-priv
-  session is available so we can diff behavior between identities.
+- For IDOR / privilege-escalation hunts, load identities from the **account
+  vault** (`tools/account_vault.py`) — the standard model is ≥3 (`A-admin`,
+  `B-admin` in another company, `A-lowpriv` in the same tenant). Refresh any
+  stale session via its recipe before replaying. See `/hunt-idor-caido`.
 
 The MFA workflow-skip and SAML signature-stripping probes deliberately stay
 **unauthenticated** even when a session is loaded — that's the bug they test

@@ -82,6 +82,8 @@ Fresh token (Tradeshift, ~minutes TTL): in the logged-in Chrome tab
 JSON.parse(await fetch('/v4/accesstoken',{credentials:'include'}).then(r=>r.text())).accessToken  // already includes "Bearer "
 ```
 
+> Test identities live in the **account vault** (`tools/account_vault.py`, store outside git in Claude's memory dir). Pull a session with `get <target> <label> --field session.bearer`; if `stale <target> <label>` says STALE, refresh per the account's recipe and `set-session` it back. See `/hunt-idor-caido` and memory `feedback-account-vault`.
+
 | Param type | What to send | Positive signal |
 |---|---|---|
 | **free-text** (`q`, `name`, `label`, `value`, note bodies) | SQLi: `'` `"` `' OR '1'='1` `'||pg_sleep(5)--` `' AND SLEEP(5)--` `'; WAITFOR DELAY '0:0:5'--` · SSTI: `${7*7}` `{{7*7}}` `#{7*7}` `<%=7*7%>` · reflected XSS: `'"><svg onerror=alert(1)>` | SQLi: error leak, boolean diff, or **+5s** in `roundtripMs` · SSTI: response contains `49` · XSS: payload reflected **raw** in an HTML-context (`text/html`) response |

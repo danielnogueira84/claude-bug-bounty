@@ -28,17 +28,35 @@ Datetime is interpreted in the operator's local offset (default `-03`) unless `-
 
 ---
 
-## Prerequisites — two identities, seeded with canaries
+## Prerequisites — the account vault (≥3 identities), seeded with canaries
 
-IDOR needs **two accounts you control**: **A = attacker**, **B = victim**. Ideally same privilege level, different tenant/org (cross-tenant BOLA pays most). Confirm both from memory or ask the operator for the account labels + how to obtain each one's session.
+IDOR/BOLA needs several identities you control, at different privilege levels and tenants. **Load them from the account vault** (`tools/account_vault.py`) — the per-target store of logins, roles, groups, companies, canaries, and live sessions (with TTL + refresh recipe). The vault lives **outside git** in Claude's project memory dir (`~/.claude/projects/<slug>/memory/accounts/<target>.json`, `0600`) so credentials are never pushed.
 
-**Seed canaries BEFORE testing (requires write access).** In every *writable* field that can surface in a response — name, company/org name, note/description, address, email local-part — write a unique improbable marker:
+**Standard role model (at least 3; extend per target):**
 
-- Account A: `ZZCAN-A-<rand>` (e.g. `ZZCAN-A-7f3a9e`)
-- Account B: `ZZCAN-B-<rand>`
+| Label | Role | Company | Tests |
+|---|---|---|---|
+| `A-admin` | full-access admin / Owner | Company A | baseline that legitimately sees all |
+| `B-admin` | admin, **different company** | Company B | **cross-tenant** BOLA (A↔B) |
+| `A-lowpriv` | restricted user | Company A | **vertical privesc / BFLA** (can lowpriv hit admin-only endpoints *in its own tenant*?) |
+| `A-<role>` | any specific role | Company A | per-role authorization gaps |
+
+So "attacker A / victim B" generalizes: pick the attacker/victim pair per test — `A-admin→B-admin` (cross-tenant), `A-lowpriv→A-admin` (vertical), `A-lowpriv→B-*` (cross-tenant + horizontal), etc.
+
+```
+python3 tools/account_vault.py list <target>              # see labels/roles/companies + session freshness
+python3 tools/account_vault.py get  <target> A-admin --field session.bearer
+python3 tools/account_vault.py stale <target> <label>     # exit 3 = session expired -> refresh it
+```
+
+**Session handling — always work with a fresh session.** Before replaying as any identity: `stale <target> <label>`; if STALE (or `no-session`), run that account's **refresh recipe** (`get <target> <label> --field refresh.how`) — hit the token endpoint, re-login with the stored user/password, or read it from the account's Chrome profile — then write it back with `set-session <target> <label> --bearer ... --cookie k=v --ttl N`. Never build a test on an expired session (produces false negatives).
+
+**Seed canaries BEFORE testing (write access).** In every *writable* field that can surface in a response — name, company/org name, note/description, address, email local-part — write a unique improbable marker per account, and store it in the vault (`set-field <target> <label> canary ZZCAN-...`):
+
+- `A-admin`: `ZZCAN-A-<rand>` · `B-admin`: `ZZCAN-B-<rand>` · `A-lowpriv`: `ZZCAN-Alow-<rand>`
 - Email canary via H1 subaddressing: `myliberty+canB-7f3a@wearehackerone.com`
 
-Pick a token that collides with nothing in the app (prefix `ZZCAN-` + role + 6 hex). Record both canaries — Step 4 greps for them. If a field is read-only, note it; those endpoints fall back to the differential matrix.
+Prefix `ZZCAN-` + role + 6 hex, colliding with nothing in the app. Step 4 greps for them. Read-only fields fall back to the differential matrix.
 
 > Why seed: it converts "is this data relevant / someone else's?" (a judgment call) into `grep ZZCAN-B` (a fact). This is the whole point of the command.
 

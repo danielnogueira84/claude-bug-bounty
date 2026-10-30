@@ -25,8 +25,15 @@ Root cause, pattern, bypass table, chaining opportunity, real paid examples.
 
 ## 1. IDOR — INSECURE DIRECT OBJECT REFERENCE  🔐
 > #1 most paid web2 class — 30% of all submissions that get paid.
-> **Needs two sessions** (A=attacker, B=victim) — load both via `--auth-file`
-> and diff audit-log `session_id` hashes to confirm cross-tenant access.
+> **Needs multiple sessions** — load them from the **account vault**
+> (`tools/account_vault.py`, store outside git in Claude's memory dir). Use the
+> standard role model (≥3): `A-admin` (full access, Company A), `B-admin`
+> (different company → cross-tenant pair), `A-lowpriv` (restricted, same tenant →
+> vertical privesc/BFLA), plus any `A-<role>`. Pick the attacker→victim pair per
+> test. Seed each account with a `ZZCAN-...` canary so a cross-boundary leak is a
+> `grep`, not a judgment call. Refresh stale sessions via each account's recipe
+> (`stale`/`get --field refresh.how`/`set-session`). See `/hunt-idor-caido` +
+> memory `feedback-account-vault` and `feedback-idor-canary-differential`.
 
 ### Root Cause
 ```python

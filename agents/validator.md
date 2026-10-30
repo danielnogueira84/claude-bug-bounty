@@ -128,6 +128,6 @@ REASON: [One clear sentence explaining why]
 ACTION: [What researcher should do next]
 - PASS: "Proceed to /report"
 - KILL: "Move on to the next lead"
-- DOWNGRADE: "Reproduce with two accounts and show victim PII in response, then re-triage"
+- DOWNGRADE: "Reproduce with two accounts from the account vault (tools/account_vault.py; e.g. A-admin→B-admin cross-tenant, or A-lowpriv→A-admin vertical) and show the victim's canary/PII in the response, then re-triage"
 - CHAIN REQUIRED: "Build [specific chain]. Confirm it works end-to-end. Then report both together."
 ```
