@@ -44,7 +44,7 @@ The owner (H1 username `myliberty`) receives all mail sent to any `+identifier` 
 | `/recon` | `/recon target.com` — full recon pipeline |
 | `/hunt` | `/hunt target.com` — start hunting |
 | `/hunt-caido` | `/hunt-caido "2026-08-05 16:50" [--scope <name>]` — hunt the Caido HTTP history after a datetime, scoped; proves each injection class per Critical Rule 7 |
-| `/hunt-idor-caido` | `/hunt-idor-caido "2026-08-05 16:50" [--scope <name>]` — hunt IDOR/BOLA in Caido history via canary seeding + 3-state differential (A→A/A→B/B→B); proves cross-object reads, kills the "200 on token-swap" false positives |
+| `/hunt-idor-caido` | `/hunt-idor-caido "2026-08-05 16:50" [--tz -03] [--scope <name>] [--pairs attacker:victim,...] [--ops read,write,delete]` — hunt IDOR/BOLA in Caido history via canary seeding + 3-state differential (A→A/A→B/B→B); proves cross-object reads, kills the "200 on token-swap" false positives. Same datetime/--tz/--scope as `/hunt-caido`; `--classes` replaced by `--ops` (operation type) + `--pairs` (vault identity pairs) |
 | `/validate` | `/validate` — run 7-Question Gate on current finding |
 | `/report` | `/report` — write submission-ready report |
 | `/chain` | `/chain` — build A→B→C exploit chain |

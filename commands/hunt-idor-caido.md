@@ -1,5 +1,5 @@
 ---
-description: Hunt IDOR/BOLA across the Caido HTTP history using canary seeding + a 3-state differential (A→A / A→B / B→B) replayed server-side. Turns the flood of "200 on token-swap" into a short ranked list of PROVEN cross-object/cross-tenant reads. Not a status-code scanner. Usage: /hunt-idor-caido "2026-08-05 16:50" [--scope <name>] [--accounts A=<label>,B=<label>]
+description: Hunt IDOR/BOLA across the Caido HTTP history using canary seeding + a 3-state differential (A→A / A→B / B→B) replayed server-side. Turns the flood of "200 on token-swap" into a short ranked list of PROVEN cross-object/cross-tenant reads. Not a status-code scanner. Usage: /hunt-idor-caido "2026-08-05 16:50" [--tz -03] [--scope <name>] [--pairs attacker:victim,...] [--ops read,write,delete]
 ---
 
 # /hunt-idor-caido
@@ -17,14 +17,22 @@ This is a **methodology command driven through the Caido MCP** (`mcp__caido__*`)
 
 ## Usage
 
+Same core parameters as `/hunt-caido` (datetime + `--tz` + `--scope`). `--classes`
+does **not** apply — the class is fixed (IDOR/BOLA); its role is taken by `--ops`
+(which kinds of object access to test) and `--pairs` (which identity pairs to test).
+
 ```
-/hunt-idor-caido "2026-08-05 16:50"                              (all in-scope objects after cutoff)
-/hunt-idor-caido "2026-08-05 16:50" --scope Mercury             (pin scope by name)
-/hunt-idor-caido "2026-08-05 16:50" --accounts A=empresa-a,B=empresa-b
-/hunt-idor-caido "2026-08-05 16:50" --tz -03                    (datetime offset; default America/Sao_Paulo)
+/hunt-idor-caido "2026-08-05 16:50"                                   (all pairs, all ops, active scope)
+/hunt-idor-caido "2026-08-05 16:50" --tz -03 --scope Tradeshift       (same style as /hunt-caido)
+/hunt-idor-caido "2026-08-05 16:50" --pairs A-admin:B-admin           (only this attacker→victim pair)
+/hunt-idor-caido "2026-08-05 16:50" --pairs A-admin:B-admin,A-lowpriv:A-admin
+/hunt-idor-caido "2026-08-05 16:50" --ops read,write,delete           (subset the operation types)
 ```
 
-Datetime is interpreted in the operator's local offset (default `-03`) unless `--tz` is given.
+- **datetime** (positional) + **`--tz <offset>`** — the cutoff, interpreted in the operator's local offset (default `-03`) unless `--tz` is given. Identical to `/hunt-caido`.
+- **`--scope <name>`** — pin the Caido scope. Identical to `/hunt-caido`.
+- **`--pairs attacker:victim,...`** — identity pairs by **vault label** (`tools/account_vault.py`). Default (no flag): the sensible set — the cross-tenant admin pair (`A-admin:B-admin`) **and** the vertical pair (`A-lowpriv:A-admin`), plus any `A-<role>` in the vault against its tenant admin.
+- **`--ops read,write,delete`** — the IDOR analog of `--classes`: restrict to READ IDOR (GET), WRITE BOLA (POST/PUT/PATCH), and/or DELETE/consuming ops. Default: all three.
 
 ---
 
